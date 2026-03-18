@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -10,6 +10,20 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate('/dashboard');
+    });
+
+    // Listen for auth changes (e.g., after OAuth redirect)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate('/dashboard');
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
