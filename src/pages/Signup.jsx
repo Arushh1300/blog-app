@@ -13,15 +13,30 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedPassword) {
+      toast.error('All fields are required');
+      return;
+    }
+
+    if (trimmedPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: trimmedEmail,
+        password: trimmedPassword,
         options: {
           data: {
-            name: name
+            name: trimmedName
           }
         }
       });
@@ -30,6 +45,7 @@ const Signup = () => {
       toast.success('Registration successful! Check your email or sign in.');
       navigate('/login');
     } catch (error) {
+       console.log(error);
        toast.error('Signup failed: ' + error.message);
     } finally {
       setIsLoading(false);
